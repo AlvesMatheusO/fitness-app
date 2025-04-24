@@ -3,8 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 
 import { ThemeContext } from "../../../contexts/ui/ThemeContext";
 import { lightTheme, darkTheme } from "../../theme/theme";
-import ChartVictory from "../../components/charts/ChartVictory";
-import GeneralChart from "../../components/charts/GeneralChart";
+import SimplifiedChart from "../../components/charts/SimplifiedChart/SimplifiedMain";
 
 export default function HomeScreen() {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -14,11 +13,7 @@ export default function HomeScreen() {
       style={[styles.container, { backgroundColor: currentTheme.background }]}
     >
       <View style={styles.chart1}>
-        <Text style={styles.title}>
-          Simplificado
-        </Text>
-        {/* <ChartVictory />*/}
-        <GeneralChart /> 
+        <SimplifiedChart />
       </View>
     </View>
   );
@@ -31,17 +26,7 @@ const styles = StyleSheet.create({
   },
 
   chart1: {
-    height: 300,
-    backgroundColor: "#E0F0E4",
-    padding: 8,
-    borderRadius: 24
-  },
-
-  title: {
-    fontSize: 20,
-    fontWeight: "thin",
-    marginBottom: 16,
-    padding: 16,
-    color: 'black'
+    padding: 12,
+    borderRadius: 24,
   },
 });
