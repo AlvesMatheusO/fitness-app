@@ -10,9 +10,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import BorgScaleChart from "../BorgScaleChart/BorgScaleChart";
-import Heart from "../../../assets/icon/heart.svg";
-import Saturation from "../../../assets/icon/saturation.svg";
-import Power from "../../../assets/icon/power.svg";
+
 import BottomSimplified from "./BottomSimplified";
 
 const heartRate = [
@@ -20,11 +18,11 @@ const heartRate = [
   98, 97, 96, 95, 94, 92, 90, 88, 85, 80, 75,
 ];
 const saturation = [
-  98, 98, 98, 97, 97, 97, 96, 96, 96, 95, 95, 95, 95, 94, 94, 94, 93, 93, 93,
+  98, 98, 98, 97, 97, 97, 96, 96, 80, 89, 88, 85, 84, 83, 82, 60, 93, 93, 93,
   93, 93, 94, 94, 95, 95, 96, 96, 97, 97, 98,
 ];
 const exercisePower = [
-  40, 42, 44, 46, 48, 50, 50, 50, 50, 48, 46, 44, 42, 40, 38, 36, 34, 32, 30,
+  40, 42, 44, 46, 48, 50, 50, 50, 50, 48, 46, 44, 42, 40, 0, 0, 0, 0, 0,
   28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8,
 ];
 
@@ -68,7 +66,7 @@ export default function SimplifiedChart() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.chartBackground}>
+      <View style={styles.chartBackground}  pointerEvents="box-none">
         <Text style={styles.title}>Simplificado</Text>
         <View style={styles.chartContainer}>
           {isActive && (
@@ -149,8 +147,8 @@ export default function SimplifiedChart() {
             )}
           </CartesianChart>
 
-          <View style={{ padding: 15, paddingHorizontal: 30 }}>
-            <BorgScaleChart values={[2, 5, 3, 10, 8, 10, 5]} />
+          <View style={{ padding: 15, paddingHorizontal: 25 }}>
+            <BorgScaleChart values={[2, 3, 8, 10]} />
           </View>
         </View>
       </View>
@@ -187,8 +185,8 @@ const styles = StyleSheet.create({
 
   chartBackground: {
     backgroundColor: "#FFF",
-    padding: 20,
-    height: 360,
+    paddingHorizontal: 25,
+    height: 290,
     borderRadius: 24,
   },
 
@@ -202,7 +200,7 @@ const styles = StyleSheet.create({
 
   chartContainer: {
     // padding: 30,
-    height: 250,
+    height: 200,
     position: "relative",
     backgroundColor: "#FFF",
   },
@@ -219,7 +217,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
     position: "absolute",
-    // zIndex: -1,
+    zIndex: 1,
   },
   tooltipText: {
     fontSize: 12,

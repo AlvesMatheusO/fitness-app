@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 20
   },
 
   line: {
