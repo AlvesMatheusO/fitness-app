@@ -14,12 +14,8 @@ export default function HomeScreen() {
     <View
       style={[styles.container, { backgroundColor: currentTheme.background }]}
     >
-      <View style={styles.chart1}>
+      {/* <View style={styles.chart1}>
         <SimplifiedChart />
-      </View>
-{/* 
-      <View>
-        <BottomSimplified />
       </View> */}
     </View>
   );
