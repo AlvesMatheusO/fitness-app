@@ -8,7 +8,7 @@ import TopbarBackground from "../../../assets/topBackground.svg";
 import Clock from "../../../assets/icon/clock.svg";
 import Add from "../../../assets/icon/add.svg";
 
-export default function HomeScreen() {
+export default function HomeScreen( { navigation } ) {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const currentTheme = theme === "light" ? lightTheme : darkTheme;
 
@@ -78,7 +78,9 @@ export default function HomeScreen() {
           </View>
           <Text style={styles.month}>Maio</Text>
 
-          <TouchableOpacity>
+          <TouchableOpacity 
+          onPress={ () => navigation.navigate("Details")}
+          >
             <View style={styles.eachLog}>
               <Text style={[styles.lastTrainingTitle, { paddingTop: 8 }]}>
                 Natação

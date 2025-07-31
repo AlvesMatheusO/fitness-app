@@ -17,6 +17,7 @@ export default function SettingsScreen() {
   const currentTheme = theme === "light" ? lightTheme : darkTheme;
 
   const isDark = theme === "dark";
+  
   return (
     <View
       style={[styles.container, { backgroundColor: currentTheme.background }]}

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StyleSheet, View, Text, Image } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 import { CartesianChart, Line, useChartPressState } from "victory-native";
 
 import Animated, {
@@ -17,13 +17,15 @@ const heartRate = [
   70, 72, 74, 77, 80, 82, 84, 86, 88, 90, 92, 94, 95, 96, 97, 98, 98, 98, 98,
   98, 97, 96, 95, 94, 92, 90, 88, 85, 80, 75,
 ];
+
 const saturation = [
   98, 98, 98, 97, 97, 97, 96, 96, 80, 89, 88, 85, 84, 83, 82, 60, 93, 93, 93,
   93, 93, 94, 94, 95, 95, 96, 96, 97, 97, 98,
 ];
+
 const exercisePower = [
-  40, 42, 44, 46, 48, 50, 50, 50, 50, 48, 46, 44, 42, 40, 0, 0, 0, 0, 0,
-  28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8,
+  40, 42, 44, 46, 48, 50, 50, 50, 50, 48, 46, 44, 42, 40, 0, 0, 0, 0, 0, 28, 26,
+  24, 22, 20, 18, 16, 14, 12, 10, 8,
 ];
 
 const DATA = heartRate.map((hr, i) => ({
@@ -34,6 +36,21 @@ const DATA = heartRate.map((hr, i) => ({
 }));
 
 export default function SimplifiedChart() {
+  const [liveData, setLiveData] = React.useState<typeof DATA>([]);
+  const indexRef = React.useRef(0);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      if (indexRef.current < DATA.length) {
+        setLiveData((prev) => [...prev, DATA[indexRef.current]]);
+        indexRef.current += 1;
+      } else {
+        clearInterval(interval);
+      }
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
+
   const { state, isActive } = useChartPressState({
     x: 0,
     y: {
@@ -44,18 +61,23 @@ export default function SimplifiedChart() {
   });
 
   const currentIndex = useDerivedValue(() => {
+    if (!liveData || liveData.length === 0) return 0;
     const i = Math.round(state.x.value.value);
-    return Math.max(0, Math.min(i, DATA.length - 1));
+    return Math.max(0, Math.min(i, liveData.length - 1));
   });
 
   const [tooltipData, setTooltipData] = React.useState(DATA[0]);
 
-  //ATUALIZAR OS DADOS VISIVEIS NO TOOLTIP QUANDO O INDEX MUDAR
   useDerivedValue(() => {
-    const data = DATA[currentIndex.value];
-    runOnJS(setTooltipData)(data);
+    if (!liveData || liveData.length === 0) return null;
+    const index = currentIndex.value;
+    const safeIndex = Math.min(index, liveData.length - 1);
+    const data = liveData[safeIndex];
+    if (data) {
+      runOnJS(setTooltipData)(data);
+    }
     return null;
-  }, [currentIndex]);
+  }, [currentIndex, liveData]);
 
   const tooltipStyle = useAnimatedStyle(() => ({
     position: "absolute",
@@ -64,9 +86,27 @@ export default function SimplifiedChart() {
     opacity: isActive ? 1 : 0,
   }));
 
+  const WINDOW_SIZE = 20;
+
+  const visibleData = React.useMemo(() => {
+    if (!liveData || liveData.length === 0) return [];
+    if (liveData.length <= WINDOW_SIZE) return liveData;
+    return liveData.slice(liveData.length - WINDOW_SIZE);
+  }, [liveData]);
+
+  const safeVisibleData = visibleData && visibleData.length > 0 ? visibleData : [];
+
+  const xDomain = React.useMemo(() => {
+    if (!safeVisibleData || safeVisibleData.length === 0) return [0, WINDOW_SIZE];
+    const start = 0;
+    const lastTime = safeVisibleData[safeVisibleData.length - 1]?.time;
+    const end = typeof lastTime === "number" ? lastTime : WINDOW_SIZE;
+    return [start, Math.max(end, WINDOW_SIZE)];
+  }, [safeVisibleData]);
+
   return (
     <View style={styles.container}>
-      <View style={styles.chartBackground}  pointerEvents="box-none">
+      <View style={styles.chartBackground} pointerEvents="box-none">
         <Text style={styles.title}>Simplificado</Text>
         <View style={styles.chartContainer}>
           {isActive && (
@@ -92,60 +132,51 @@ export default function SimplifiedChart() {
                 style={[styles.tooltipContainer, tooltipStyle]}
               >
                 <Text style={styles.tooltipText}>
-                  FC: {tooltipData.heartRate} bpm
+                  FC: {tooltipData?.heartRate ?? "--"} bpm
                 </Text>
                 <Text style={styles.tooltipText}>
-                  Sat: {tooltipData.saturation}%
+                  Sat: {tooltipData?.saturation ?? "--"}%
                 </Text>
                 <Text style={styles.tooltipText}>
-                  Pot: {tooltipData.exercisePower}%
+                  Pot: {tooltipData?.exercisePower ?? "--"}%
                 </Text>
               </Animated.View>
             </>
           )}
 
-          <CartesianChart
-            data={DATA}
-            xKey="time"
-            yKeys={["heartRate", "saturation", "exercisePower"]}
-            chartPressState={state}
-            xAxis={{
-              lineWidth: 0,
-              tickCount: 0,
-              labelColor: "transparent",
-            }}
-            yAxis={[
-              {
-                yKeys: ["heartRate", "saturation", "exercisePower"],
+          {safeVisibleData.length > 1 && (
+            <CartesianChart
+              data={safeVisibleData}
+              xKey="time"
+              yKeys={["heartRate", "saturation", "exercisePower"]}
+              chartPressState={state}
+              xAxis={{
+                domain: xDomain,
                 lineWidth: 0,
-                tickCount: 0,
+                tickCount: 5,
                 labelColor: "transparent",
-              },
-            ]}
-            frame={{
-              lineWidth: 0,
-            }}
-          >
-            {({ points }) => (
-              <>
-                <Line
-                  points={points.heartRate}
-                  color="#F64783"
-                  strokeWidth={2}
-                />
-                <Line
-                  points={points.saturation}
-                  color="#82AB6F"
-                  strokeWidth={2}
-                />
-                <Line
-                  points={points.exercisePower}
-                  color="#F88837"
-                  strokeWidth={2}
-                />
-              </>
-            )}
-          </CartesianChart>
+              }}
+              yAxis={[
+                {
+                  yKeys: ["heartRate", "saturation", "exercisePower"],
+                  lineWidth: 0,
+                  tickCount: 0,
+                  labelColor: "transparent",
+                },
+              ]}
+              frame={{
+                lineWidth: 0,
+              }}
+            >
+              {({ points }) => (
+                <>
+                  <Line points={points.heartRate} color="#F64783" strokeWidth={2} />
+                  <Line points={points.saturation} color="#82AB6F" strokeWidth={2} />
+                  <Line points={points.exercisePower} color="#F88837" strokeWidth={2} />
+                </>
+              )}
+            </CartesianChart>
+          )}
 
           <View style={{ padding: 15, paddingHorizontal: 25 }}>
             <BorgScaleChart values={[2, 3, 8, 10]} />
@@ -156,6 +187,7 @@ export default function SimplifiedChart() {
     </View>
   );
 }
+
 function ToolTip({
   x,
   y,
@@ -199,7 +231,6 @@ const styles = StyleSheet.create({
   },
 
   chartContainer: {
-    // padding: 30,
     height: 200,
     position: "relative",
     backgroundColor: "#FFF",

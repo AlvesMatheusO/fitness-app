@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { setStatusBarBackgroundColor, StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -7,7 +8,6 @@ import AppLoading from "expo-app-loading";
 import loadFonts from "./src/utils/loadFonts";
 
 import Routes from "./src/routes/Routes";
-import { useState } from "react";
 
 export default function App() {
   const [ready, setReady] = useState(false);
